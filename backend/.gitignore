@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+.next/
+
+# Environment files (contain private keys!)
+.env
+.env.local
+.env.development
+.env.production
+
+# Data files (contains test wallet data)
+data/*.json
+!data/.gitkeep
+
+# Cache
+tx_cache.json
+
+# Logs
+*.log

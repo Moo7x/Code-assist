@@ -1,0 +1,12 @@
+--- TEMPLATE FILE
+templates/base/packages/nextjs/scaffold.config.ts.template.mjs
+
+
+--- ARGS FILES
+	- /solidity-frameworks/hardhat/packages/nextjs/scaffold.config.ts.args.mjs
+	- /create-eth-extensions/extension/packages/nextjs/scaffold.config.ts.args.mjs
+
+
+--- RESULTING ARGS
+	- configOverrides:	[[object Object],[object Object]]
+	- skipLocalChainInTargetNetworks:	[true]

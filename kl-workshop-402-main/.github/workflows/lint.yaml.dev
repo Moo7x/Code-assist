@@ -1,0 +1,16 @@
+--- TEMPLATE FILE
+templates/base/.github/workflows/lint.yaml.template.mjs
+
+
+--- ARGS FILES
+	- /solidity-frameworks/hardhat/.github/workflows/lint.yaml.args.mjs
+
+
+--- RESULTING ARGS
+	- solidityEnvSetup:	[
+      - name: Run hardhat node, deploy contracts (& generate contracts typescript output)
+        run: yarn chain & yarn deploy
+
+      - name: Run hardhat lint
+        run: yarn hardhat:lint --max-warnings=0
+]

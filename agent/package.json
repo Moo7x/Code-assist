@@ -1,0 +1,22 @@
+{
+    "name": "symbiont-agent",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "agent": "tsx agent.ts",
+        "demo": "tsx agent.ts"
+    },
+    "dependencies": {
+        "@x402/core": "^2.2.0",
+        "@x402/evm": "^2.2.0",
+        "@x402/fetch": "^2.2.0",
+        "dotenv": "^16.4.5",
+        "viem": "^2.38.4"
+    },
+    "devDependencies": {
+        "@types/node": "^18.19.50",
+        "tsx": "^4.7.0",
+        "typescript": "^5.8.2"
+    }
+}

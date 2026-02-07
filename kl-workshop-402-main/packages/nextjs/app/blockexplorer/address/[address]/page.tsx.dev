@@ -1,0 +1,10 @@
+--- TEMPLATE FILE
+templates/base/packages/nextjs/app/blockexplorer/address/[address]/page.tsx.template.mjs
+
+
+--- ARGS FILES
+	- /solidity-frameworks/hardhat/packages/nextjs/app/blockexplorer/address/[address]/page.tsx.args.mjs
+
+
+--- RESULTING ARGS
+	- artifactsDirName:	[artifacts]

@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Environment files (contain private keys!)
+.env
+.env.local
+.env.development
+.env.production
+*.env
+
+# Data files (test/dev data)
+data/*.json
+!data/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+tx_cache.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.log
+
+Descriptions.md
+summary.md

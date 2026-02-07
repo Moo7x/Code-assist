@@ -1,0 +1,13 @@
+--- TEMPLATE FILE
+templates/base/packages/nextjs/components/Header.tsx.template.mjs
+
+
+--- ARGS FILES
+	- /create-eth-extensions/extension/packages/nextjs/components/Header.tsx.args.mjs
+
+
+--- RESULTING ARGS
+	- extraMenuLinksObjects:	[[object Object]]
+	- logoSubtitle:	[SE-2 extension (HTTP 402)]
+	- logoTitle:	[x402 Demo]
+	- preContent:	[import { CreditCardIcon } from "@heroicons/react/24/outline";]

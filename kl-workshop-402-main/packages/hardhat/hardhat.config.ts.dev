@@ -1,0 +1,10 @@
+--- TEMPLATE FILE
+templates/extension hardhat/packages/hardhat/hardhat.config.ts.template.mjs
+
+
+--- ARGS FILES
+(no args files writing to the template)
+
+
+--- RESULTING ARGS
+(no args sent for the template)

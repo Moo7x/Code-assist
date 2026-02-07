@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment files (contain private keys!)
+.env
+.env.local
+
+# Logs
+*.log
