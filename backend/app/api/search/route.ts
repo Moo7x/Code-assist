@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
         const results = smartSearch(query, db, minConfidence, agentEnv);
 
         if (results.length === 0) {
-            console.log(`[SYMBIONT] No match for: "${query.slice(0, 50)}..." env: ${JSON.stringify(agentEnv)}`);
+            console.log(`[CODE-ASSIST] No match for: "${query.slice(0, 50)}..." env: ${JSON.stringify(agentEnv)}`);
             return NextResponse.json(
                 {
                     found: false,
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        console.log(`[SYMBIONT] Found ${results.length} matches, best: ${results[0].solution.id} (${results[0].confidence}% conf, ${results[0].environmentMatch}% env)`);
+        console.log(`[CODE-ASSIST] Found ${results.length} matches, best: ${results[0].solution.id} (${results[0].confidence}% conf, ${results[0].environmentMatch}% env)`);
 
         return NextResponse.json({
             found: true,

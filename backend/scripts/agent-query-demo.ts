@@ -15,11 +15,11 @@ import { privateKeyToAccount } from "viem/accounts";
 const AGENT_PRIVATE_KEY = "0x00cbebd250e4912df8f87a4782ddeba184fd76f647b910ffca7b1af51b636af7";
 
 // Use an existing error signature from the database
-const ERROR_SIGNATURE = "TypeError: Cannot read property 'foo' of undefined at line 99";
+const ERROR_SIGNATURE = "this is a test error";
 
 async function main() {
     console.log("=".repeat(60));
-    console.log("  SYMBIONT - Agent Query Demo (x402 Payment Flow)");
+    console.log("  CODE-ASSIST - Agent Query Demo (x402 Payment Flow)");
     console.log("=".repeat(60));
     console.log();
 

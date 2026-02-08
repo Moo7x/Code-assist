@@ -131,7 +131,7 @@ export function CodeEditorModal({
     }
 
     setSubmitState("submitting")
-    setSubmissionStep("Waking Agent...")
+    setSubmissionStep(standalone ? "Adding Solution..." : "Waking Agent...")
 
     try {
       // Step 1: Simulate Agent Waking Up
@@ -440,9 +440,14 @@ export function CodeEditorModal({
               <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-8 h-8 text-success" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-2">Bounty Resolved!</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-2">
+                {standalone ? "Solution Added!" : "Bounty Resolved!"}
+              </h3>
               <p className="text-muted-foreground mb-6">
-                Agent successfully accepted your solution.
+                {standalone
+                  ? "Your solution has been added to the database."
+                  : "Agent successfully accepted your solution."
+                }
               </p>
 
               {txHash && (
@@ -462,7 +467,7 @@ export function CodeEditorModal({
               )}
 
               <Button onClick={handleClose}>
-                Close & Refresh Board
+                Close
               </Button>
             </div>
           )}

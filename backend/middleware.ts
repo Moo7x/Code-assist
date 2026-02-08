@@ -45,7 +45,7 @@ registerExactEvmScheme(server);
 const paywall = createPaywall()
     .withNetwork(evmPaywall)
     .withConfig({
-        appName: "Symbiont - AI Agent Fix Marketplace",
+        appName: "Code-Assist - AI Agent Fix Marketplace",
         testnet: isTestnet,
     })
     .build();
@@ -63,19 +63,19 @@ export const middleware = paymentProxy(
                     payTo,
                 },
             ],
-            description: "Purchase runtime error fix from Symbiont marketplace",
+            description: "Purchase runtime error fix from Code-Assist marketplace",
             mimeType: "application/json",
         },
         "/api/bounty/create": {
             accepts: [
                 {
                     scheme: "exact",
-                    price: "$0.50",
+                    price: "$0.30",
                     network: caip2Network,
                     payTo,
                 },
             ],
-            description: "Post a new bounty on Symbiont",
+            description: "Post a new bounty on Code-Assist",
             mimeType: "application/json",
         },
     },

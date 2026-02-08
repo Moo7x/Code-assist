@@ -92,6 +92,20 @@ function extractTxHash(request: NextRequest): string | null {
     }
 }
 
+// 从 PAYMENT-RESPONSE header 提取 agent wallet
+function extractAgentWallet(request: NextRequest): string | null {
+    const paymentResponse = request.headers.get("PAYMENT-RESPONSE");
+    if (!paymentResponse) return null;
+
+    try {
+        const decoded = JSON.parse(Buffer.from(paymentResponse, 'base64').toString());
+        // x402 payment response contains payer address
+        return decoded.payer || decoded.from || null;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * 查询解决方案 API（付费）
  * 此端点受 x402 middleware 保护，只有成功支付后才能访问
@@ -153,69 +167,58 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    console.log(`[SYMBIONT] Solution purchased: ${solution.id} - Seller: ${solution.seller_wallet}`);
+    console.log(`[CODE-ASSIST] Solution purchased: ${solution.id} - Seller: ${solution.seller_wallet}`);
 
     // ============================================================
-    // PAYOUT TO SELLER - Transfer from Treasury to Seller
+    // ESCROW: Create pending payment instead of immediate payout
+    // Payment will be settled when agent votes
     // ============================================================
-    let payoutTxHash: string | null = null;
-    const payoutAmount = solution.price || "0.01"; // Default to query price
+    const payoutAmount = solution.price || "0.01";
+    let pendingPaymentId: string | null = null;
 
-    if (txHash && solution.seller_wallet) {
+    // Extract agent wallet from tx or header
+    const agentWallet = extractAgentWallet(request);
+
+    if (txHash && solution.seller_wallet && agentWallet) {
         try {
-            const account = privateKeyToAccount(TREASURY_PRIVATE_KEY as `0x${string}`);
-            const client = createWalletClient({
-                account,
-                chain: baseSepolia,
-                transport: http()
-            });
-
-            console.log(`[PAYOUT] Forwarding ${payoutAmount} USDC to Seller ${solution.seller_wallet}...`);
-
-            const hash = await client.writeContract({
-                address: USDC_ADDRESS,
-                abi: USDC_ABI,
-                functionName: 'transfer',
-                args: [solution.seller_wallet as `0x${string}`, parseUnits(payoutAmount, 6)]
-            });
-
-            payoutTxHash = hash;
-            console.log(`[PAYOUT] Success! Seller paid. Tx: ${hash}`);
-
-            // Update seller earnings
+            // Create pending payment record
+            const PENDING_PATH = path.join(process.cwd(), "data", "pending_payments.json");
+            let pendingPayments: any[] = [];
             try {
-                const sellersData = fs.readFileSync(SELLERS_PATH, "utf-8");
-                const sellers = JSON.parse(sellersData);
-                const seller = sellers[solution.seller_wallet.toLowerCase()];
-                if (seller) {
-                    const currentEarnings = parseFloat(seller.total_earnings || "0");
-                    seller.total_earnings = (currentEarnings + parseFloat(payoutAmount)).toFixed(2);
-                    seller.total_sales = (seller.total_sales || 0) + 1;
-                    sellers[solution.seller_wallet.toLowerCase()] = seller;
-                    fs.writeFileSync(SELLERS_PATH, JSON.stringify(sellers, null, 2));
-                    console.log(`[SELLER] Updated earnings for ${solution.seller_wallet}: ${seller.total_earnings} USDC`);
-                }
-            } catch (e) {
-                console.error(`[SELLER] Failed to update earnings:`, e);
+                pendingPayments = JSON.parse(fs.readFileSync(PENDING_PATH, "utf-8"));
+            } catch { pendingPayments = []; }
+
+            pendingPaymentId = `pp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            const pendingPayment = {
+                id: pendingPaymentId,
+                solution_id: solution.id,
+                agent_wallet: agentWallet.toLowerCase(),
+                seller_wallet: solution.seller_wallet.toLowerCase(),
+                amount: payoutAmount,
+                status: "pending",  // pending | settled | refunded
+                payment_tx: txHash,
+                created_at: new Date().toISOString(),
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24h timeout
+            };
+
+            pendingPayments.push(pendingPayment);
+            fs.writeFileSync(PENDING_PATH, JSON.stringify(pendingPayments, null, 2));
+
+            console.log(`[ESCROW] Created pending payment ${pendingPaymentId}`);
+            console.log(`[ESCROW] Amount: ${payoutAmount} USDC will be released after agent votes`);
+            console.log(`[ESCROW] Agent: ${agentWallet}, Seller: ${solution.seller_wallet}`);
+
+            // Update solution usage count only (earnings updated after vote)
+            const db = readDB();
+            const solutionIndex = db.findIndex(s => s.id === solution.id);
+            if (solutionIndex !== -1) {
+                db[solutionIndex].usage_count = (db[solutionIndex].usage_count || 0) + 1;
+                writeDB(db);
+                console.log(`[USAGE] Solution ${solution.id} - Usage: ${db[solutionIndex].usage_count}`);
             }
 
-            // Update solution usage stats in database
-            try {
-                const db = readDB();
-                const solutionIndex = db.findIndex(s => s.id === solution.id);
-                if (solutionIndex !== -1) {
-                    db[solutionIndex].usage_count = (db[solutionIndex].usage_count || 0) + 1;
-                    const currentEarnings = parseFloat(db[solutionIndex].total_earnings || "0");
-                    db[solutionIndex].total_earnings = (currentEarnings + parseFloat(payoutAmount)).toFixed(2);
-                    writeDB(db);
-                    console.log(`[USAGE] Solution ${solution.id} - Usage: ${db[solutionIndex].usage_count}, Earnings: ${db[solutionIndex].total_earnings}`);
-                }
-            } catch (e) {
-                console.error(`[USAGE] Failed to update usage stats:`, e);
-            }
-
-        } catch (txError) {
-            console.error(`[PAYOUT] Failed to pay seller:`, txError);
+        } catch (escrowError) {
+            console.error(`[ESCROW] Failed to create pending payment:`, escrowError);
         }
     }
 
@@ -230,9 +233,10 @@ export async function GET(request: NextRequest) {
         seller_wallet: solution.seller_wallet,
         seller_reputation: solution.seller_reputation,
         tags: solution.tags,
-        tx_hash: payoutTxHash,
-        message: payoutTxHash
-            ? `Payment verified via x402. Seller received ${payoutAmount} USDC!`
+        pending_payment_id: pendingPaymentId,
+        escrow: true,
+        message: pendingPaymentId
+            ? `Payment held in escrow. Vote to release ${payoutAmount} USDC to seller or get refund.`
             : "Payment verified via x402. Here's your solution!"
     };
 

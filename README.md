@@ -1,4 +1,4 @@
-# Symbiont
+# Code-Assist
 
 > The "Ground Truth" Protocol for AI Agents — A decentralized marketplace where AI Agents buy verified code solutions from human experts using the **x402** payment protocol.
 
@@ -16,14 +16,14 @@ Traditional resources like StackOverflow are designed for humans — full of dis
 
 ## 💡 The Solution
 
-**Symbiont** creates a marketplace where:
+**Code-Assist** creates a marketplace where:
 1. **AI Agents** post bounties for errors they can't solve
 2. **Human Experts** submit verified solutions and earn USDC
 3. **x402 Protocol** enables HTTP-native micropayments
-4. **Reputation System** ensures trust and quality
+4. **Escrow System** ensures fair payment based on solution quality
 
 ```
-Agent Error → Query Database → Pay via x402 → Get JSON Solution → Continue Working
+Agent Error → Query Database → Pay via x402 → Get JSON Solution → Vote → Settlement
 ```
 
 ## ✨ Key Features
@@ -31,7 +31,7 @@ Agent Error → Query Database → Pay via x402 → Get JSON Solution → Contin
 ### For AI Agents
 - **Instant Cache**: 90% of queries return cached solutions in <200ms
 - **x402 Payments**: HTTP-native micropayments (pay-per-query)
-- **Environment Matching**: Solutions matched by OS + Runtime + Dependencies
+- **Escrow Protection**: Downvote to get refund if solution doesn't work
 
 ### For Human Experts (Solvers)
 - **Bounty Board**: See live agent errors with USDC rewards
@@ -42,12 +42,12 @@ Agent Error → Query Database → Pay via x402 → Get JSON Solution → Contin
 
 ```
 ┌─────────────────┐     x402 Payment      ┌─────────────────┐
-│    AI Agent     │ ───────────────────── │    Symbiont     │
+│    AI Agent     │ ───────────────────── │   Code-Assist   │
 │                 │ ←── Solution JSON ──  │    Backend      │
 └─────────────────┘                       └────────┬────────┘
-                                                   │
-                                          ┌────────▼────────┐
-                                          │  Human Solver   │
+        │                                          │
+        │ Vote (up/down)                  ┌────────▼────────┐
+        └────────────────────────────────→│  Human Solver   │
                                           │   (Dashboard)   │
                                           └─────────────────┘
 ```
@@ -79,14 +79,14 @@ npx tsx agent.ts
 ## 📁 Project Structure
 
 ```
-Symbiont/
+Code-Assist/
 ├── backend/                 # Next.js 15 Application
 │   ├── app/api/            # API Routes
 │   │   ├── bounty/         # Bounty CRUD (x402 protected)
 │   │   ├── query/          # Solution queries (x402 protected)
 │   │   ├── upload/         # Solution submission
-│   │   ├── stake/          # Staking system
-│   │   └── vote/           # Solution voting
+│   │   ├── vote/           # Solution voting + escrow settlement
+│   │   └── stake/          # Staking system
 │   ├── components/         # React UI components
 │   ├── middleware.ts       # x402 Payment Gateway
 │   └── data/               # JSON database
@@ -97,7 +97,7 @@ Symbiont/
 
 ## 🔐 x402 Integration
 
-Symbiont uses **x402** (Coinbase's HTTP Payment Protocol) for seamless micropayments:
+Code-Assist uses **x402** (Coinbase's HTTP Payment Protocol) for seamless micropayments:
 
 ```typescript
 // Agent queries for solution
@@ -109,15 +109,16 @@ X-Payment: {payTo, amount, network}
 
 // Agent pays and retries
 X-Payment-Response: {transaction}
-→ Solution returned
+→ Solution returned (payment held in escrow)
 ```
 
-## 💰 Economic Flow
+## 💰 Economic Flow (Escrow)
 
-1. **Agent Posts Bounty** → Pays 0.50 USDC via x402
-2. **Human Solves** → Submits solution, receives bounty reward
-3. **Solution Cached** → Future agents pay per-query (0.01-0.10 USDC)
-4. **Votes** → Agents upvote/downvote, affecting solver reputation
+1. **Agent Queries** → Pays via x402, payment held in Treasury
+2. **Agent Tests Solution** → Tries the fix
+3. **Agent Votes**:
+   - ✅ **Upvote** → Payment released to Seller
+   - ❌ **Downvote** → Payment refunded to Agent
 
 ## 🛠 Tech Stack
 
@@ -137,17 +138,18 @@ X-Payment-Response: {transaction}
 | `POST /api/bounty/create` | x402 | Create new bounty |
 | `GET /api/query` | x402 | Query solution database |
 | `POST /api/upload` | Auth | Submit solution |
-| `POST /api/vote` | Auth | Upvote/downvote solution |
+| `POST /api/vote` | Auth | Vote + trigger escrow settlement |
 | `POST /api/stake` | Auth | Stake USDC for selling |
 
 ## 🎮 Demo Flow
 
 1. **Human** opens dashboard, sees bounty for `TypeError: Cannot read property 'map' of undefined`
 2. **Human** submits fix, sets query price to 0.05 USDC
-3. **Agent** encounters same error, queries Symbiont
+3. **Agent** encounters same error, queries Code-Assist
 4. **Agent** receives 402, pays 0.05 USDC via x402
-5. **Agent** gets JSON solution, applies fix
-6. **Human** sees earnings increase on dashboard
+5. **Agent** gets JSON solution, tests it
+6. **Agent** upvotes → Seller receives payment
+   - OR downvotes → Agent gets refund
 
 ## 🔮 Future Roadmap
 

@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: "application/vnd.github.v3+json",
-                "User-Agent": "Symbiont-App"
+                "User-Agent": "Code-Assist-App"
             }
         });
 
@@ -186,6 +186,7 @@ export async function GET(request: NextRequest) {
                 github_contributions: contributions,
                 joined_at: new Date().toISOString(),
                 total_sales: 0,
+                total_earnings: "0.00",
                 success_votes: 0,
                 failure_votes: 0,
                 staked_amount: "0.00",

@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    console.log(`[SYMBIONT] Pre-check: ${hash} - Solution exists, price: ${solution.price}`);
+    console.log(`[CODE-ASSIST] Pre-check: ${hash} - Solution exists, price: ${solution.price}`);
 
     // 返回元信息，但不包含具体解决方案代码
     return NextResponse.json({

@@ -38,7 +38,7 @@ async function main() {
                         "next": "15.0.0"
                     }
                 },
-                reward: "0.50",
+                reward: "0.30",
                 agent_wallet: signer.address
             })
         });

@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
                 };
                 writeBounties(bounties);
 
-                console.log(`[SYMBIONT] Bounty ${bounty_id} marked as solved by ${seller_wallet}`);
+                console.log(`[CODE-ASSIST] Bounty ${bounty_id} marked as solved by ${seller_wallet}`);
 
                 try {
                     const account = privateKeyToAccount(TREASURY_PRIVATE_KEY as `0x${string}`);
@@ -282,8 +282,8 @@ export async function POST(request: NextRequest) {
             writeSellers(sellers);
         }
 
-        console.log(`[SYMBIONT] Simulating Agent payment to Treasury for solution ${id} (Price: ${newSolution.price} USDC)`);
-        console.log(`[SYMBIONT] New solution uploaded: ${id} by ${seller_wallet}`);
+        console.log(`[CODE-ASSIST] Simulating Agent payment to Treasury for solution ${id} (Price: ${newSolution.price} USDC)`);
+        console.log(`[CODE-ASSIST] New solution uploaded: ${id} by ${seller_wallet}`);
 
         return NextResponse.json({
             success: true,
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
             reward: bountyReward
         });
     } catch (error) {
-        console.error("[SYMBIONT] Upload error:", error);
+        console.error("[CODE-ASSIST] Upload error:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
@@ -321,7 +321,13 @@ export async function GET(request: NextRequest) {
             seller_reputation: s.seller_reputation,
             tags: s.tags,
             environment: s.environment,
-            created_at: s.created_at
+            created_at: s.created_at,
+            // Usage tracking fields
+            usage_count: s.usage_count || 0,
+            total_earnings: s.total_earnings || "0.00",
+            initial_reward: s.initial_reward || s.price || "0.01",
+            upvotes: s.upvotes || 0,
+            downvotes: s.downvotes || 0
         })),
     });
 }
